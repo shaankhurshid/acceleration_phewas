@@ -1,0 +1,60 @@
+# Script to process phecode tables
+
+# Depends
+library(data.table)
+library(stringr)
+library(survival)
+
+# Index of file names
+list <- paste0('/mnt/ml4cvd/projects/skhurshid/accel_phewas/phecode_tables/',list.files('/mnt/ml4cvd/projects/skhurshid/accel_phewas/phecode_tables'))
+
+# Load exposure/covariate data
+prs <- fread('/mnt/ml4cvd/projects/skhurshid/accel_phewas/cox_data_prs_invnorm.csv')
+setkey(prs,sample_id)
+
+# Format dates
+for (j in (c('enroll_date','phenotype_censor_date'))){set(prs,j=j,value=as.Date(prs[[j]],format='%Y-%m-%d'))}
+
+# Init vars
+out <- data.table(); n <- 1
+
+# Looping cox model
+for (i in list){
+# Merge
+  phecode <- NULL; analysis_set <- NULL
+  phecode <- read.table(i,sep='\t',header = TRUE); setDT(phecode)
+  setkey(phecode,sample_id)
+  analysis_set <- prs[phecode,nomatch=0]
+# Format variables
+  analysis_set[,censor_date := as.Date(censor_date,format='%Y-%m-%d')]
+# Create analysis variables
+  analysis_set[,time_to_event := ifelse(c(has_disease == 0 | is.na(has_disease)),pmin(as.numeric(censor_date - enroll_date)/365.25,as.numeric(phenotype_censor_date - enroll_date)/365.25),
+                                        as.numeric(censor_date - enroll_date)/365.25)]
+# Remove prevalent disease or no follow-up
+  analysis_set <- analysis_set[!is.na(time_to_event) & time_to_event > 0]
+# Define events and follow-up
+  disease <- analysis_set$disease[1]
+  n_events <- nrow(analysis_set[has_disease==1])
+  fu_median <- quantile(analysis_set$time_to_event,0.50); fu_q1 <- quantile(analysis_set$time_to_event,0.25); fu_q3 <- quantile(analysis_set$time_to_event,0.75)
+# If less than 10 cases, abort
+  if (n_events < 10){
+    beta <- NA; se <- NA; hr <- NA; lower <- NA; upper <- NA; p <- NA
+    result <- data.table(disease,n_events,fu_median,fu_q1,fu_q3,beta,se,hr,lower,upper,p)
+    out <- rbind(out,result)
+    print(paste0("Skipping phenotype ",analysis_set$disease[1]," since < 10 cases"))
+    if (n %% 50 == 0){print(paste0("Just finished model ",n," out of ",length(list),"!"))}
+    n <- n+1; next}
+# Fit cox model
+  model <- coxph(Surv(time_to_event,has_disease) ~ inferred_accel_invnorm + enroll_age + sex 
+                 + PC1 + PC2 + PC3 + PC4 + PC5, data=analysis_set)
+  beta <- summary(model)$coefficients[1,1]; se <- summary(model)$coefficients[1,3]
+  hr <- summary(model)$coefficients[9]; lower <- summary(model)$conf.int[17]
+  upper <- summary(model)$conf.int[25]; p <- summary(model)$coefficients[33]
+  result <- data.table(disease,n_events,fu_median,fu_q1,fu_q3,hr,beta,se,lower,upper,p)
+  out <- rbind(out,result)
+  if (n %% 50 == 0){print(paste0("Just finished model ",n," out of ",length(list),"!"))}
+  n <- n+1
+}
+
+# Save out
+write.csv(out,file='/mnt/ml4cvd/projects/skhurshid/accel_phewas/phecode_processed/cox_prs_invnorm.csv',row.names=F)

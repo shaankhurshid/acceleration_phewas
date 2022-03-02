@@ -5,7 +5,7 @@ library(data.table)
 library(viridis)
 
 # Load processed phewas results
-value_bmi <- fread('~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_self_mvpa_cutoff_processed_fdr.csv')
+value_bmi <- fread('~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_self_mvpa_cutoff_processed_fdr_covar.csv')
 value_bmi <- value_bmi[n_events >= 100]
 
 # Get median HR for each group
@@ -15,7 +15,7 @@ setkey(value_bmi,group_median_hr)
 ### BOX AND WHISKER PLOTS
 ## ALL
 # Plot
-pdf('~/Documents/MGH Research/accel_phewas/phecode_plots/effect_size_box_self_mvpa_cutoff.pdf',pointsize=6,
+pdf('~/Documents/MGH Research/accel_phewas/phecode_plots/effect_size_box_self_mvpa_cutoff_covar.pdf',pointsize=6,
     height=6,width=9)
 par(oma=c(1,1,1,1))
 par(mar=c(15,4,2,8.5))
@@ -23,12 +23,12 @@ par(mar=c(15,4,2,8.5))
 # Plot
 boxplot(formula = value_bmi$hr ~ value_bmi$group_median_hr,
         col=unique(value_bmi[order(value_bmi$group_median_hr)]$col),xlab='',ylab='',xaxt='n',yaxt='n',frame=F,
-        cex=1.4,outline=FALSE,ylim=c(0.5,1.5),xlim=c(0,length(unique(value_bmi$category))),
+        cex=1.4,outline=FALSE,ylim=c(0.2,1.4),xlim=c(0,length(unique(value_bmi$category))),
         at=1:length(unique(value_bmi$category)))
 
 # Axes
 axis(1,cex.axis=2,at=1:(length(unique(value_bmi$category))),labels = NA)
-axis(2,cex.axis=2,las=2,pos=-0.2,at=seq(0.5,1.5,0.5))
+axis(2,cex.axis=2,las=2,pos=-0.2,at=seq(0.2,1.4,0.2))
 mtext(side=2,'Hazard ratio',cex=2,line=2.8)
 
 text(x = 1:length(unique(value_bmi$category)),

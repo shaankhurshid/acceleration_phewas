@@ -2,8 +2,8 @@
 library(Cairo)
 
 # Load processed results
-mvpa_cutoff <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_cutoff_bmi_processed_fdr.csv')
-mvpa <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_self_mvpa_cutoff_processed_fdr.csv')
+mvpa_cutoff <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_cutoff_bmi_processed_fdr_covar.csv')
+mvpa <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_self_mvpa_cutoff_processed_fdr_covar.csv')
 
 # Color list
 col_corr <- fread(file='~/Documents/MGH Research/accel_phewas/col_corr.csv')
@@ -31,7 +31,7 @@ med_mvpa[col_corr,col := i.cat_col]
 setorder(med_mvpa,order=-category)
 
 # Plot
-CairoPDF(file='~/Documents/MGH Research/accel_phewas/compare_self_mvpa.pdf',height=4,width=5,pointsize=5)
+CairoPDF(file='~/Documents/MGH Research/accel_phewas/compare_self_mvpa_covar.pdf',height=4,width=5,pointsize=5)
 par(oma=c(1,1,1,1),mar=c(5,13,1,1),xpd=TRUE)
 plot(x=c(med_mvpa$hr,med_mvpa$self_hr),y=rep(seq(1,nrow(med_mvpa)*2,2),2),col=rep(med_mvpa$col,2),bty='n',
      yaxt='n',xaxt='n',ylab='',xlab='',pch=c(rep(19,nrow(med_mvpa)),rep(17,nrow(med_mvpa))),

@@ -8,7 +8,7 @@ library(fdrtool)
 
 # Loads
 dict <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_definitions/phecode_definitions1.2.csv')
-results <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_mvpa_bmi_old.csv')
+results <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_mvpa_bmi_old_covar.csv')
 
 # Load color correspondences from Fig 2
 col_corr <- fread(file='~/Documents/MGH Research/accel_phewas/col_corr.csv')
@@ -30,8 +30,8 @@ results <- results[!is.na(hr)]
 # Remove non-sensical results
 results <- results[c(lower != Inf & upper != Inf)]
 
-# Have to replace zeros with a really small number
-results[p==0]$p <- 1*10^-10
+# Fix p-values
+results[,p := 2*pnorm(abs(z),lower.tail = FALSE)]
 
 fdr_out <- fdrtool(x=results$p,statistic='pvalue')
 
@@ -79,16 +79,19 @@ x_locs$x_coord <- out
 
 setkey(x_locs,category)
 
+# Graphical y
+results[,p_graphical := ifelse(p < 1*10^-20,1*10^-20,p)]
+
 # Plot p-values
 pdf(file='~/Documents/MGH Research/accel_phewas/phecode_plots/cox_mvpa_bmi_fdr_old.pdf',height=5,width=12,pointsize=5)
 par(mar=c(15.6,4,1,5),oma=c(1,1,1,1))
 
-plot(x=1:nrow(results),y=-log10(results$p),col=ifelse(!is.na(results$sig),results$col,paste0(results$col,'4D')),
+plot(x=1:nrow(results),y=-log10(results$p_graphical),col=ifelse(!is.na(results$sig),results$col,paste0(results$col,'4D')),
      bty='n',xaxt='n',yaxt='n',xlim=c(0,nrow(results)),
-     ylim=c(0,20),xlab='',ylab='',cex=2.2,pch=results$shape)
+     ylim=c(0,16),xlab='',ylab='',cex=2.2,pch=results$shape)
 
 axis(1,at=x_locs$x_coord,cex.axis=2.4,labels=rep('',length(x_locs$x_coord)))
-axis(2,cex.axis=2.4,at=seq(0,20,5),las=2,pos=-12)
+axis(2,cex.axis=2.4,at=seq(0,16,2),las=2,pos=-12)
 
 mtext("-log(p)",2,line=3,cex=2.4)
 

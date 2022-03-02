@@ -166,6 +166,16 @@ mvpa_bmi_young <- young[,c('sample_id','accel_date','age_accel','sex','bmi','mvp
 mvpa_bmi_medium <- medium[,c('sample_id','accel_date','age_accel','sex','bmi','mvpa_std','phenotype_censor_date')]
 mvpa_bmi_old <- old[,c('sample_id','accel_date','age_accel','sex','bmi','mvpa_std','phenotype_censor_date')]
 
+### OUTPUT 9: 2 YEAR BLANKING PERIOD SENSI
+young <- acceleration[age_accel < 55]
+young[,mvpa_std := (mvpa_rate_bouted - mean(mvpa_rate_bouted,na.rm=T))/sd(mvpa_rate_bouted,na.rm=T)]
+
+medium <- acceleration[age_accel >= 55 & age_accel < 65]
+medium[,mvpa_std := (mvpa_rate_bouted - mean(mvpa_rate_bouted,na.rm=T))/sd(mvpa_rate_bouted,na.rm=T)]
+
+old <- acceleration[age_accel >= 65]
+old[,mvpa_std := (mvpa_rate_bouted - mean(mvpa_rate_bouted,na.rm=T))/sd(mvpa_rate_bouted,na.rm=T)]
+
 # Write out
 write.csv(mvpa_bmi_young,file='/Volumes/medpop_afib/skhurshid/acceleration_phewas/cox_data_mvpa_bmi_young.csv',row.names = F)
 write.csv(mvpa_bmi_medium,file='/Volumes/medpop_afib/skhurshid/acceleration_phewas/cox_data_mvpa_bmi_medium.csv',row.names = F)

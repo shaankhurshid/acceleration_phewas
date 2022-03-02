@@ -6,6 +6,8 @@ See Khurshid et al. Accelerometer-Derived and Genetically Inferred Physical Acti
 
 # overview
 - scripts arranged into groups based on functionality
--- analysis/plotting: scripts to process and visualize association tests
--- analysis/analysis: scripts to perform PheWAS analysis (relies on pre-built UK Biobank disease tables, see 'phecodes')
--- phecodes: scripts to generate phecode tables for association testing
+  - phecodes: scripts to generate phecode/outcome tables for association testing
+  - seed_files: scripts to generate exposure tables for association testing
+  - analysis/analysis: scripts to perform PheWAS analysis (relies on pre-built UK Biobank disease tables, see 'phecodes'), designed to run on outputs of 'phecodes' and 'seed_files'
+  - analysis/plotting: scripts to process and visualize association tests
+- 'covar' denotes fully adjusted models

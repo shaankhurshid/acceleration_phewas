@@ -45,7 +45,7 @@ for (i in list){
     if (n %% 50 == 0){print(paste0("Just finished model ",n," out of ",length(list),"!"))}
     n <- n+1; next}
 # Fit cox model
-  model <- coxph(Surv(time_to_event,has_disease) ~ pspline(mvpa_decile,df=0) + age_accel + sex + bmi + sbp + dbp + bpmed + tob + tdi + etoh_grams, data=analysis_set)
+  model <- coxph(Surv(time_to_event,has_disease) ~ pspline(mvpa_decile,df=0) + age_accel + sex + bmi + sbp + dbp + bpmed + tob + tdi + etoh_grams + diet + qual_ea, data=analysis_set)
   resid <- termplot(model,term=1,se=FALSE,plot=F,partial.resid=F)
   value_term <- resid$mvpa_decile
   center <- with(value_term, y[x==min(abs((x-0)))])

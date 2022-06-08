@@ -6,14 +6,14 @@ library(stringr)
 library(survival)
 
 # Index of file names
-list <- paste0('/mnt/ml4cvd/projects/skhurshid/accel_phewas/new_phecode_tables/',list.files('/mnt/ml4cvd/projects/skhurshid/accel_phewas/new_phecode_tables'))
+list <- paste0('/mnt/ml4cvd/projects/skhurshid/accel_phewas/phecode_tables_inpt/',list.files('/mnt/ml4cvd/projects/skhurshid/accel_phewas/phecode_tables_inpt'))
 
 # Load exposure/covariate data
-vpa_bmi <- fread('/mnt/ml4cvd/projects/skhurshid/accel_phewas/cox_data_vpa_rate_bmi_covar.csv')
-setkey(vpa_bmi,sample_id)
+mvpa_bmi <- fread('/mnt/ml4cvd/projects/skhurshid/accel_phewas/cox_data_mvpa_rate_bmi_covar.csv')
+setkey(mvpa_bmi,sample_id)
 
 # Format dates
-for (j in (c('accel_date','phenotype_censor_date'))){set(vpa_bmi,j=j,value=as.Date(vpa_bmi[[j]],format='%Y-%m-%d'))}
+for (j in (c('accel_date','phenotype_censor_date'))){set(mvpa_bmi,j=j,value=as.Date(mvpa_bmi[[j]],format='%Y-%m-%d'))}
 
 # Init vars
 out <- data.table(); n <- 1
@@ -24,7 +24,7 @@ for (i in list){
   phecode <- NULL; analysis_set <- NULL
   phecode <- read.table(i,sep='\t',header = TRUE); setDT(phecode)
   setkey(phecode,sample_id)
-  analysis_set <- vpa_bmi[phecode,nomatch=0]
+  analysis_set <- mvpa_bmi[phecode,nomatch=0]
 # Format variables
   analysis_set[,censor_date := as.Date(censor_date,format='%Y-%m-%d')]
 # Create analysis variables
@@ -38,24 +38,22 @@ for (i in list){
   fu_median <- quantile(analysis_set$time_to_event,0.50); fu_q1 <- quantile(analysis_set$time_to_event,0.25); fu_q3 <- quantile(analysis_set$time_to_event,0.75)
 # If less than 10 cases, abort
   if (n_events < 10){
-    min_decile <- NA; max_decile <- NA
-    result <- data.table(disease,n_events,fu_median,fu_q1,fu_q3,min_decile,max_decile)
+    hr <- NA; lower <- NA; upper <- NA; z <- NA; p <- NA
+    result <- data.table(disease,n_events,fu_median,fu_q1,fu_q3,hr,lower,upper,z,p)
     out <- rbind(out,result)
     print(paste0("Skipping phenotype ",analysis_set$disease[1]," since < 10 cases"))
     if (n %% 50 == 0){print(paste0("Just finished model ",n," out of ",length(list),"!"))}
     n <- n+1; next}
 # Fit cox model
-  model <- coxph(Surv(time_to_event,has_disease) ~ pspline(vpa_decile,df=0) + age_accel + sex + bmi + sbp + dbp + bpmed + tob + tdi + etoh_grams + diet + qual_ea, data=analysis_set)
-  resid <- termplot(model,term=1,se=FALSE,plot=F,partial.resid=F)
-  value_term <- resid$vpa_decile
-  center <- with(value_term, y[x==min(abs((x-0)))])
-  min_decile <- value_term$x[which.min(value_term$y)]
-  max_decile <- value_term$x[which.max(value_term$y)]
-  result <- data.table(disease,n_events,fu_median,fu_q1,fu_q3,min_decile,max_decile)
+  model <- coxph(Surv(time_to_event,has_disease) ~ mvpa_std + age_accel + sex + bmi + sbp + dbp + bpmed + tob + tdi + etoh_grams + diet + qual_ea, data=analysis_set)
+  hr <- summary(model)$coefficients[1,2]; lower <- summary(model)$conf.int[1,3]
+  upper <- summary(model)$conf.int[1,4]; z <- summary(model)$coefficients[1,4]
+  p <- 2*pnorm(abs(z),lower.tail=FALSE)
+  result <- data.table(disease,n_events,fu_median,fu_q1,fu_q3,hr,lower,upper,z,p)
   out <- rbind(out,result)
   if (n %% 50 == 0){print(paste0("Just finished model ",n," out of ",length(list),"!"))}
   n <- n+1
 }
 
 # Save out
-write.csv(out,file='/mnt/ml4cvd/projects/skhurshid/accel_phewas/phecode_processed/cox_vpa_bmi_quintile_covar.csv',row.names=F)
+write.csv(out,file='/mnt/ml4cvd/projects/skhurshid/accel_phewas/phecode_processed/cox_mvpa_bmi_covar_inpt.csv',row.names=F)

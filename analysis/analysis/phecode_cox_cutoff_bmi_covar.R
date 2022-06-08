@@ -45,9 +45,9 @@ for (i in list){
     if (n %% 50 == 0){print(paste0("Just finished model ",n," out of ",length(list),"!"))}
     n <- n+1; next}
 # Fit cox model
-  model <- coxph(Surv(time_to_event,has_disease) ~ who_acc_rate_bouted + age_accel + sex + bmi + sbp + dbp + bpmed + tob + tdi + etoh_grams, data=analysis_set)
-  hr <- summary(model)$coefficients[12]; lower <- summary(model)$conf.int[23]
-  upper <- summary(model)$conf.int[34]; z <- summary(model)$coefficients[34]
+  model <- coxph(Surv(time_to_event,has_disease) ~ who_acc_rate_bouted + age_accel + sex + bmi + sbp + dbp + bpmed + tob + tdi + etoh_grams + diet + qual_ea, data=analysis_set)
+  hr <- summary(model)$coefficients[1,2]; lower <- summary(model)$conf.int[1,3]
+  upper <- summary(model)$conf.int[1,4]; z <- summary(model)$coefficients[1,4]
   p <- 2*pnorm(abs(z),lower.tail=FALSE)
   result <- data.table(disease,n_events,fu_median,fu_q1,fu_q3,hr,lower,upper,z,p)
   out <- rbind(out,result)

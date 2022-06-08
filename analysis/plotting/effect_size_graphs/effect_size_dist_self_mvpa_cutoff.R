@@ -21,18 +21,18 @@ par(oma=c(1,1,1,1))
 par(mar=c(15,4,2,8.5))
 
 # Plot
-boxplot(formula = value_bmi$hr ~ value_bmi$group_median_hr,
+boxplot(formula = value_bmi$hr ~ value_bmi$group_median_hr,log='y',
         col=unique(value_bmi[order(value_bmi$group_median_hr)]$col),xlab='',ylab='',xaxt='n',yaxt='n',frame=F,
-        cex=1.4,outline=FALSE,ylim=c(0.2,1.4),xlim=c(0,length(unique(value_bmi$category))),
+        cex=1.4,outline=FALSE,ylim=c(0.4,1.4),xlim=c(0,length(unique(value_bmi$category))),
         at=1:length(unique(value_bmi$category)))
 
 # Axes
 axis(1,cex.axis=2,at=1:(length(unique(value_bmi$category))),labels = NA)
-axis(2,cex.axis=2,las=2,pos=-0.2,at=seq(0.2,1.4,0.2))
+axis(2,cex.axis=2,las=2,pos=0,at=seq(0.4,1.4,0.2))
 mtext(side=2,'Hazard ratio',cex=2,line=2.8)
 
 text(x = 1:length(unique(value_bmi$category)),
-     y = par("usr")[3] - 0.03,
+     y = par("usr")[3] + 0.785,
      labels = unique(value_bmi$category),
      xpd = NA,
      srt = -45,

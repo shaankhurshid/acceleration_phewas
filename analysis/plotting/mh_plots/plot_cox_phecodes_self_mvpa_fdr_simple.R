@@ -30,8 +30,8 @@ results <- results[!is.na(hr)]
 # Remove non-sensical results
 results <- results[c(lower != Inf & upper != Inf)]
 
-# Have to replace zeros with a really small number
-results[p==0]$p <- 1*10^-10
+# Replace zeros with minimum observed p-value
+results[p==0]$p <- min(results$p[results$p!=0])
 
 fdr_out <- fdrtool(x=results$p,statistic='pvalue')
 
@@ -86,17 +86,17 @@ par(mar=c(15,3,1,6),oma=c(1,1,1,1))
 
 plot(x=1:nrow(results),y=-log10(results$p),col=ifelse(!is.na(results$sig),results$col,paste0(results$col,'4D')),
      bty='n',xaxt='n',yaxt='n',xlim=c(0,nrow(results)),
-     ylim=c(0,20),xlab='',ylab='',cex=2,pch=results$shape)
+     ylim=c(0,16),xlab='',ylab='',cex=2,pch=results$shape)
 
 axis(1,at=x_locs$x_coord,cex.axis=2,labels=rep('',length(x_locs$x_coord)))
-axis(2,cex.axis=2,at=seq(0,20,5),las=2,pos=-12)
+axis(2,cex.axis=2,at=seq(0,16,2),las=2,pos=-12)
 
 mtext("-log(p)",2,line=1.5,cex=2)
 
 segments(0,-log10(max(results[sig==1]$p)),nrow(results),-log10(max(results[sig==1]$p)),col='#bd0026',lty=5)
 
 text(x = x_locs$x_coord,
-     y = par("usr")[3] - 0.8,
+     y = par("usr")[3] + 0.785,
      labels = str_remove_all(x_locs$category,'[A-z]\\_'),
      xpd = NA,
      srt = -45,

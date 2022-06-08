@@ -45,8 +45,8 @@ for (i in list){
     if (n %% 50 == 0){print(paste0("Just finished model ",n," out of ",length(list),"!"))}
     n <- n+1; next}
 # Fit cox model
-  model <- coxph(Surv(time_to_event,has_disease) ~ factor(vpa_decile) + age_accel + sex + bmi + sbp + dbp + bpmed + tob + tdi + etoh_grams, data=analysis_set)
-  coefs <- exp(model$coefficients[1:9])
+  model <- coxph(Surv(time_to_event,has_disease) ~ factor(vpa_decile) + age_accel + sex + bmi + sbp + dbp + bpmed + tob + tdi + etoh_grams + diet + qual_ea, data=analysis_set)
+  coefs <- exp(model$coefficients[1:4])
   result <- data.table(disease,n_events,fu_median,fu_q1,fu_q3,
                        d2=coefs[1],d3=coefs[2],d4=coefs[3],d5=coefs[4])
   out <- rbind(out,result)

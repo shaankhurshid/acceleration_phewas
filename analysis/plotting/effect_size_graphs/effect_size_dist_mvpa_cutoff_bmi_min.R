@@ -5,7 +5,7 @@ library(data.table)
 library(viridis)
 
 # Load processed phewas results
-mvpa_bmi <- fread('~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_mvpa_bmi_processed_fdr_medium.csv')
+mvpa_bmi <- fread('~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_mvpa_bmi_processed_fdr_covar_min.csv')
 
 # Get median HR for each group
 mvpa_bmi[,group_median_hr := lapply(.SD,median,na.rm=T),.SDcols='hr',by='category']
@@ -14,7 +14,7 @@ setkey(mvpa_bmi,group_median_hr)
 ### BOX AND WHISKER PLOTS
 ## ALL
 # Plot
-pdf('~/Documents/MGH Research/accel_phewas/phecode_plots/effect_size_box_mvpa_bmi_medium.pdf',pointsize=6,
+pdf('~/Documents/MGH Research/accel_phewas/phecode_plots/effect_size_box_cutoff_bmi_min.pdf',pointsize=6,
     height=6,width=9)
 par(oma=c(1,1,1,1))
 par(mar=c(15,4,2,8.5))

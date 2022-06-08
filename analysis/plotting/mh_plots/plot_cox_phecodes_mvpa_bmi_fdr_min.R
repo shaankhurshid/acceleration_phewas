@@ -9,7 +9,7 @@ library(EValue)
 
 # Loads
 dict <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_definitions/phecode_definitions1.2.csv')
-results <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_mvpa_cutoff_bmi_covar.csv')
+results <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_mvpa_bmi_min_covar.csv')
 
 # Load color correspondences from Fig 2
 col_corr <- fread(file='~/Documents/MGH Research/accel_phewas/col_corr.csv')
@@ -31,6 +31,9 @@ results <- results[n_events>=120]
 # Remove NAs
 results <- results[!is.na(hr)]
 
+# Remove non-sensical results
+results <- results[c(lower != Inf & upper != Inf)]
+
 # Fix p-values
 results[,p := 2*pnorm(abs(z),lower.tail = FALSE)]
 
@@ -42,14 +45,12 @@ results[which(fdr_out$qval<=0.01),sig := 1]
 # E-values
 results[,rare_dz := ifelse(n_events/96244 <= 0.15,1,0)]
 evals <- data.table(e_point=NULL, e_null=NULL)
-for (i in 1:nrow(results)){
+for (i in 1:96244){
   ev <- evalues.HR(est=results$hr[i],lo=results$lower[i],hi=results$upper[i],rare=results$rare_dz[i])
   result <- data.table(e_point=ev[2,1],e_null=ev[2,!is.na(ev[2,])][2])
   evals <- rbind(evals,result)
   i <- i+1
 }
-
-evalues.HR(est=results$hr[i],lo=results$lower[i],hi=results$upper[i],rare=results$rare_dz[i])
 
 results[,':='(e_point = evals$e_point,e_null = evals$e_null)]
 
@@ -99,7 +100,7 @@ setkey(x_locs,category)
 results[,p_graphical := ifelse(p < 1*10^-20,1*10^-20,p)]
 
 # Plot p-values
-pdf(file='~/Documents/MGH Research/accel_phewas/phecode_plots/cox_cutoff_bmi_fdr_covar.pdf',height=5,width=12,pointsize=5)
+pdf(file='~/Documents/MGH Research/accel_phewas/phecode_plots/cox_mvpa_bmi_fdr_covar_min.pdf',height=5,width=12,pointsize=5)
 par(mar=c(15,3,1,6),oma=c(1,1,1,1))
 
 plot(x=1:nrow(results),y=-log10(results$p_graphical),col=ifelse(!is.na(results$sig),results$col,paste0(results$col,'4D')),
@@ -135,7 +136,7 @@ for (i in 1:length(color)){
   sig_results$color[i] <- color[i]
 }
 
-pdf(file='~/Documents/MGH Research/accel_phewas/phecode_plots/cox_mvpa_effect_fdr_covar.pdf',height=7,width=10,pointsize=5)
+pdf(file='~/Documents/MGH Research/accel_phewas/phecode_plots/cox_mvpa_effect_fdr_covar_min.pdf',height=7,width=10,pointsize=5)
 par(mar=c(32,3,1,8),oma=c(1,1,1,1))
 
 plot(x=1:nrow(sig_results),y=sig_results$hr,col=sig_results$col,
@@ -162,9 +163,9 @@ text(x = 1:nrow(sig_results),
 
 dev.off()
 
-write.csv(results,'~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_cutoff_bmi_processed_fdr_covar.csv')
+write.csv(results,'~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_mvpa_bmi_processed_fdr_covar_min.csv')
 
 sig_good <- sig_results[hr < 1]
-setkey(sig_good,category,p)
+sig_bad <- sig_results[hr > 1]
+setkey(sig_good,category,hr)
 list <- sig_good[,.SD[1:20],by='category']
-

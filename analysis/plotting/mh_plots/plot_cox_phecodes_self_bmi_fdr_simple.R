@@ -13,9 +13,6 @@ results <- fread(file='~/Documents/MGH Research/accel_phewas/phecode_outputs/cox
 # Load color correspondences from Fig 2
 col_corr <- fread(file='~/Documents/MGH Research/accel_phewas/col_corr.csv')
 
-# Apply post-hoc event filter
-results <- results[n_events>=20]
-
 # Convert output format to phecode
 results[,phecode := as.numeric(str_remove(str_replace_all(disease,'\\_','\\.'),'phecode\\.'))]
 
@@ -23,6 +20,12 @@ results[,phecode := as.numeric(str_remove(str_replace_all(disease,'\\_','\\.'),'
 setkey(dict,phecode); setkey(results,phecode)
 results[dict,':='(phenotype = i.phenotype,
                   category = i.category)]
+
+# Apply post-hoc removal of congenital anomalies and pregnancy related conditions
+results <- results[!(category %in% c('congenital anomalies','pregnancy complications'))]
+
+# Apply post-hoc event filter (N=1754 conditions prior to exclusion, N=1302 after exclusion)
+results <- results[n_events>=120]
 
 # Remove NAs
 results <- results[!is.na(hr)]
@@ -34,6 +37,18 @@ results[,p := 2*pnorm(abs(z),lower.tail = FALSE)]
 fdr_out <- fdrtool(x=results$p,statistic='pvalue')
 
 results[which(fdr_out$qval<=0.01),sig := 1]
+
+# E-values
+results[,rare_dz := ifelse(n_events/96244 <= 0.15,1,0)]
+evals <- data.table(e_point=NULL, e_null=NULL)
+for (i in 1:nrow(results)){
+  ev <- evalues.HR(est=results$hr[i],lo=results$lower[i],hi=results$upper[i],rare=results$rare_dz[i])
+  result <- data.table(e_point=ev[2,1],e_null=ev[2,!is.na(ev[2,])][2])
+  evals <- rbind(evals,result)
+  i <- i+1
+}
+
+results[,':='(e_point = evals$e_point,e_null = evals$e_null)]
 
 # Set up plotting variables
 setkey(results,p)

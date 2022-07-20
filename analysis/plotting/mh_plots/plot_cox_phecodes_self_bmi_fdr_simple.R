@@ -39,7 +39,7 @@ fdr_out <- fdrtool(x=results$p,statistic='pvalue')
 results[which(fdr_out$qval<=0.01),sig := 1]
 
 # E-values
-results[,rare_dz := ifelse(n_events/96244 <= 0.15,1,0)]
+results[,rare_dz := ifelse(n_events/456374 <= 0.15,1,0)]
 evals <- data.table(e_point=NULL, e_null=NULL)
 for (i in 1:nrow(results)){
   ev <- evalues.HR(est=results$hr[i],lo=results$lower[i],hi=results$upper[i],rare=results$rare_dz[i])
@@ -161,5 +161,8 @@ dev.off()
 write.csv(results,'~/Documents/MGH Research/accel_phewas/phecode_outputs/cox_self_bmi_processed_fdr_covar.csv')
 
 sig_good <- sig_results[hr < 1]
+sig_bad <- sig_results[hr > 1]
 setkey(sig_good,category,p)
+setorder(sig_bad,-hr)
 list <- sig_good[,.SD[1:20],by='category']
+bad_list <- sig_bad[,.SD[1:20],by='category']

@@ -34,7 +34,7 @@ results <- results[n_events>=120]
 results[,p := 2*pnorm(abs(z),lower.tail = FALSE)]
 
 # E-values
-results[,rare_dz := ifelse(n_events/96244 <= 0.15,1,0)]
+results[,rare_dz := ifelse(n_events/456374 <= 0.15,1,0)]
 evals <- data.table(e_point=NULL, e_null=NULL)
 for (i in 1:nrow(results)){
   ev <- evalues.HR(est=results$hr[i],lo=results$lower[i],hi=results$upper[i],rare=results$rare_dz[i])

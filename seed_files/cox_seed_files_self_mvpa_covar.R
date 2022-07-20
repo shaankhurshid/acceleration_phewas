@@ -121,7 +121,8 @@ self <- censor_data[,c('sample_id','enroll_age','enroll_date','sex','self_mvpa',
 write.csv(self,file='/Volumes/medpop_afib/skhurshid/acceleration_phewas/cox_data_self_bmi_raw_covar.csv',row.names = F)
 
 # Standardize self MVPA
-self[,':='(self_mvpa = (self_mvpa - mean(self_mvpa,na.rm=T))/sd(self_mvpa,na.rm=T))]
+#self[,':='(self_mvpa = (self_mvpa - mean(self_mvpa,na.rm=T))/sd(self_mvpa,na.rm=T))]
+self[,':='(self_mvpa = self_mvpa/150)]
 
 # Write out
 write.csv(self,file='/Volumes/medpop_afib/skhurshid/acceleration_phewas/cox_data_self_bmi_covar.csv',row.names = F)

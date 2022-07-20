@@ -109,7 +109,8 @@ acceleration[edu, qual_ea := i.qual_ea]
 acceleration[etoh, ':='(etoh_grams = i.etoh_grams, etoh_status = i.f_1558)]
 acceleration[censor_data,':='(enroll_date = i.enroll_date, phenotype_censor_date = i.phenotype_censor_date)]
 acceleration[,value_std := (value - mean(value))/sd(value)]
-acceleration[,mvpa_std := (mvpa_rate_bouted - mean(mvpa_rate_bouted,na.rm=T))/sd(mvpa_rate_bouted,na.rm=T)]
+#acceleration[,mvpa_std := (mvpa_rate_bouted - mean(mvpa_rate_bouted,na.rm=T))/sd(mvpa_rate_bouted,na.rm=T)]
+acceleration[,mvpa_std := (mvpa_rate_bouted*7)/150]
 acceleration[is.na(bpmed)]$bpmed <- 0 # 350 or 0.4%
 acceleration[is.na(qual_ea)]$qual_ea <- median(acceleration$qual_ea,na.rm=T) # 837 or 0.9%
 acceleration[is.na(diet)]$diet <- 'intermediate' # 105 or 0.1%
@@ -296,7 +297,8 @@ acceleration[vig_all,vpa := i.vpa]
 # VPA variables
 # Rate in minutes per week
 acceleration[,":="(vpa_rate = (vpa/total)/(total/604800)*604800/60)]
-acceleration[,vpa_std := (vpa_rate - mean(vpa_rate,na.rm=T))/sd(vpa_rate,na.rm=T)]
+#acceleration[,vpa_std := (vpa_rate - mean(vpa_rate,na.rm=T))/sd(vpa_rate,na.rm=T)]
+acceleration[,vpa_std := (vpa_rate*7)/150]
 
 # Deciles
 acceleration[,vpa_decile := factor(quantilize(vpa_std,5),levels = as.character(1:5))]
